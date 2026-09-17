@@ -1,0 +1,9 @@
+Welcome to YOGESHTECHCODE.
+
+In this video, we will understand Microsoft Fabric.
+
+Microsoft Fabric is an end-to-end analytics platform
+that brings data engineering, data science,
+real-time analytics, and business intelligence together.
+
+Let's understand how it works.

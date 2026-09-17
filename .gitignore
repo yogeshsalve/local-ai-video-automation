@@ -216,3 +216,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+output/*
+!output/.gitkeep
+
+# Local AI models
+models/
+*.onnx
+*.onnx.json
+*.gguf
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+
+# Generated audio
+assets/audio/generated/*
+
+# Personal voice samples
+assets/audio/input/*
