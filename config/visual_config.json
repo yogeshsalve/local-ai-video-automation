@@ -1,0 +1,36 @@
+{
+    "visuals": {
+        "width": 1920,
+        "height": 1080,
+        "format": "png"
+    },
+    "types": {
+        "title": {
+            "description": "Branded title screen with large topic text"
+        },
+        "text": {
+            "description": "Clean technical text slide"
+        },
+        "diagram": {
+            "description": "Simple technical architecture or flow diagram"
+        },
+        "code": {
+            "description": "Technical code example displayed clearly"
+        },
+        "screenshot": {
+            "description": "Software or platform screenshot"
+        },
+        "talking_point": {
+            "description": "Technical concept explanation slide"
+        },
+        "transition": {
+            "description": "Simple branded transition screen"
+        }
+    },
+    "branding": {
+        "channel_name": "YOGESHTECHCODE"
+    },
+    "output": {
+        "directory": "assets/visuals/generated"
+    }
+}

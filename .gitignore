@@ -251,3 +251,7 @@ assets/scripts/generated/*
 # Generated scene plans
 assets/scenes/generated/*
 !assets/scenes/generated/.gitkeep
+
+# Generated visual assets
+assets/visuals/generated/*
+!assets/visuals/generated/.gitkeep
