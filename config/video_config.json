@@ -1,0 +1,28 @@
+{
+    "video": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "video_codec": "libx264",
+        "pixel_format": "yuv420p",
+        "video_quality": 23,
+        "preset": "veryfast"
+    },
+    "audio": {
+        "audio_codec": "aac",
+        "bitrate": "192k"
+    },
+    "branding": {
+        "channel_name": "YOGESHTECHCODE"
+    },
+    "inputs": {
+        "audio": "assets/audio/generated/day3_narration.wav",
+        "subtitles": "assets/audio/generated/day4_transcription.srt",
+        "background": "assets/images/generated/day5_fabric_background.png"
+    },
+    "output": {
+        "directory": "output",
+        "filename": "day6_config_video_v2.mp4",
+        "format": "mp4"
+    }
+}

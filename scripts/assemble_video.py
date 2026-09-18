@@ -1,123 +1,259 @@
+import json
 import subprocess
 from pathlib import Path
 
 
 # --------------------------------------------------
-# Configuration
+# Project paths
 # --------------------------------------------------
 
-AUDIO_FILE = Path("assets/audio/generated/day3_narration.wav")
-SRT_FILE = Path("assets/audio/generated/day4_transcription.srt")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-OUTPUT_DIR = Path("output")
-OUTPUT_FILE = OUTPUT_DIR / "day5_visual_video_v2.mp4"
-WIDTH = 1920
-HEIGHT = 1080
-FPS = 30
+CONFIG_FILE = PROJECT_ROOT / "config" / "video_config.json"
 
 
 # --------------------------------------------------
-# Check required files
+# Load configuration
 # --------------------------------------------------
 
-def check_files():
+def load_config():
 
-    if not AUDIO_FILE.exists():
+    if not CONFIG_FILE.exists():
         raise FileNotFoundError(
-            f"Audio file not found: {AUDIO_FILE}"
+            f"Configuration file not found: {CONFIG_FILE}"
         )
 
-    if not SRT_FILE.exists():
-        raise FileNotFoundError(
-            f"SRT file not found: {SRT_FILE}"
-        )
+    with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 # --------------------------------------------------
-# Prepare Windows path for FFmpeg subtitles filter
+# Resolve project-relative path
 # --------------------------------------------------
 
-def prepare_subtitle_path():
+def resolve_project_path(path_string):
 
-    subtitle_path = SRT_FILE.resolve()
+    path = Path(path_string)
+
+    if path.is_absolute():
+        return path
+
+    return PROJECT_ROOT / path
+
+
+# --------------------------------------------------
+# Prepare subtitle path for FFmpeg
+# --------------------------------------------------
+
+def prepare_subtitle_path(srt_file):
+
+    subtitle_path = srt_file.resolve()
 
     # Convert Windows backslashes to forward slashes
-    subtitle_path = str(subtitle_path).replace("\\", "/")
+    subtitle_path = str(
+        subtitle_path
+    ).replace("\\", "/")
 
-    # Escape Windows drive-letter colon for FFmpeg filter syntax
-    subtitle_path = subtitle_path.replace(":", r"\:")
+    # Escape drive-letter colon for FFmpeg filter syntax
+    subtitle_path = subtitle_path.replace(
+        ":",
+        r"\:"
+    )
 
     return subtitle_path
+
+
+# --------------------------------------------------
+# Validate required files
+# --------------------------------------------------
+
+def check_files(audio_file, srt_file, background_file):
+
+    required_files = [
+        audio_file,
+        srt_file,
+        background_file,
+    ]
+
+    for file_path in required_files:
+
+        if not file_path.exists():
+            raise FileNotFoundError(
+                f"Required file not found: {file_path}"
+            )
 
 
 # --------------------------------------------------
 # Create video
 # --------------------------------------------------
 
-def create_video():
+def create_video(config):
 
-    OUTPUT_DIR.mkdir(
+    video_config = config["video"]
+    audio_config = config["audio"]
+    input_config = config["inputs"]
+    output_config = config["output"]
+
+    # ----------------------------------------------
+    # Resolve input files
+    # ----------------------------------------------
+
+    audio_file = resolve_project_path(
+        input_config["audio"]
+    )
+
+    srt_file = resolve_project_path(
+        input_config["subtitles"]
+    )
+
+    background_file = resolve_project_path(
+        input_config["background"]
+    )
+
+    # ----------------------------------------------
+    # Resolve output
+    # ----------------------------------------------
+
+    output_dir = resolve_project_path(
+        output_config["directory"]
+    )
+
+    output_file = (
+        output_dir /
+        output_config["filename"]
+    )
+
+    output_dir.mkdir(
         parents=True,
         exist_ok=True
     )
 
-    subtitle_path = prepare_subtitle_path()
+    # ----------------------------------------------
+    # Check files
+    # ----------------------------------------------
 
-    output_path = OUTPUT_FILE.resolve()
+    check_files(
+        audio_file,
+        srt_file,
+        background_file
+    )
 
-    print("=" * 50)
+    # ----------------------------------------------
+    # Read video settings
+    # ----------------------------------------------
+
+    width = video_config["width"]
+    height = video_config["height"]
+    fps = video_config["fps"]
+
+    video_codec = video_config["video_codec"]
+    pixel_format = video_config["pixel_format"]
+    video_quality = video_config["video_quality"]
+    preset = video_config["preset"]
+
+    # ----------------------------------------------
+    # Read audio settings
+    # ----------------------------------------------
+
+    audio_codec = audio_config["audio_codec"]
+    audio_bitrate = audio_config["bitrate"]
+
+    # ----------------------------------------------
+    # Subtitle path
+    # ----------------------------------------------
+
+    subtitle_path = prepare_subtitle_path(
+        srt_file
+    )
+
+    # ----------------------------------------------
+    # Display configuration
+    # ----------------------------------------------
+
+    print("=" * 60)
     print("LOCAL AI VIDEO AUTOMATION")
-    print("Day 5 - Video Assembly")
-    print("=" * 50)
+    print("Day 6 - Configuration Driven Video Assembly")
+    print("=" * 60)
 
-    print(f"Audio : {AUDIO_FILE.resolve()}")
-    print(f"SRT   : {SRT_FILE.resolve()}")
-    print(f"Output: {output_path}")
     print()
+    print("VIDEO SETTINGS")
+    print("-" * 60)
+    print(f"Resolution   : {width}x{height}")
+    print(f"FPS          : {fps}")
+    print(f"Video codec  : {video_codec}")
+    print(f"Pixel format : {pixel_format}")
+    print(f"Quality      : {video_quality}")
+    print(f"Preset       : {preset}")
+
+    print()
+    print("AUDIO SETTINGS")
+    print("-" * 60)
+    print(f"Audio codec  : {audio_codec}")
+    print(f"Bitrate      : {audio_bitrate}")
+
+    print()
+    print("INPUT FILES")
+    print("-" * 60)
+    print(f"Audio        : {audio_file}")
+    print(f"Subtitles    : {srt_file}")
+    print(f"Background   : {background_file}")
+
+    print()
+    print("OUTPUT")
+    print("-" * 60)
+    print(f"Video        : {output_file}")
+    print()
+
+    # ----------------------------------------------
+    # FFmpeg command
+    # ----------------------------------------------
 
     command = [
         "ffmpeg",
         "-y",
 
-     	 # Background image
-      	"-loop",
-	"1",
+        # Background image
+        "-loop",
+        "1",
 
-	"-i",
-	str(Path("assets/images/generated/day5_fabric_background.png").resolve()),
+        "-framerate",
+        str(fps),
 
-	# Narration
-	"-i",
-	str(AUDIO_FILE.resolve()),
+        "-i",
+        str(background_file.resolve()),
 
-        # Burn subtitles
+        # Narration
+        "-i",
+        str(audio_file.resolve()),
+
+        # Subtitles
         "-vf",
         f"subtitles='{subtitle_path}'",
 
         # Video encoding
-       	"-c:v",
-	"libx264",
+        "-c:v",
+        video_codec,
 
-	"-preset",
-	"veryfast",
+        "-preset",
+        preset,
 
-	"-crf",
-	"23",
+        "-crf",
+        str(video_quality),
 
-	"-pix_fmt",
-	"yuv420p",
+        "-pix_fmt",
+        pixel_format,
 
         # Audio encoding
         "-c:a",
-        "aac",
+        audio_codec,
 
         "-b:a",
-        "192k",
+        audio_bitrate,
 
         # Stop when audio ends
         "-shortest",
 
-        str(output_path),
+        str(output_file.resolve()),
     ]
 
     print("Running FFmpeg...")
@@ -129,10 +265,10 @@ def create_video():
     )
 
     print()
-    print("=" * 50)
+    print("=" * 60)
     print("VIDEO CREATED SUCCESSFULLY")
-    print("=" * 50)
-    print(f"Output: {output_path}")
+    print("=" * 60)
+    print(f"Output: {output_file}")
 
 
 # --------------------------------------------------
@@ -141,8 +277,9 @@ def create_video():
 
 def main():
 
-    check_files()
-    create_video()
+    config = load_config()
+
+    create_video(config)
 
 
 if __name__ == "__main__":
