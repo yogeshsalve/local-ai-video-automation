@@ -1,9 +1,18 @@
 from pathlib import Path
 import subprocess
 import sys
+import json
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+MANIFEST_FILE = (
+    PROJECT_ROOT
+    / "assets"
+    / "visuals"
+    / "generated"
+    / "visual_manifest.json"
+)
 
 GENERATORS = {
     "title": "create_title_visual.py",
@@ -14,11 +23,30 @@ GENERATORS = {
 }
 
 
-def run_generator(generator_file):
-    generator_path = PROJECT_ROOT / "ai-engine" / "src" / generator_file
+def load_manifest():
+    with open(MANIFEST_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def run_generator(visual_type):
+    if visual_type not in GENERATORS:
+        print(
+            f"Skipping unsupported visual type: {visual_type}"
+        )
+        return
+
+    generator_file = GENERATORS[visual_type]
+
+    generator_path = (
+        PROJECT_ROOT
+        / "ai-engine"
+        / "src"
+        / generator_file
+    )
 
     print()
-    print(f"Running: {generator_file}")
+    print(f"Visual type : {visual_type}")
+    print(f"Generator   : {generator_file}")
 
     result = subprocess.run(
         [sys.executable, str(generator_path)],
@@ -30,6 +58,7 @@ def run_generator(generator_file):
     if result.returncode != 0:
         print(result.stdout)
         print(result.stderr)
+
         raise RuntimeError(
             f"Generator failed: {generator_file}"
         )
@@ -42,15 +71,18 @@ def main():
     print("MASTER VISUAL GENERATOR")
     print("=" * 60)
 
-    for visual_type, generator_file in GENERATORS.items():
-        print()
-        print(f"Visual type: {visual_type}")
+    manifest = load_manifest()
 
-        run_generator(generator_file)
+    scenes = manifest
+
+    for scene in scenes:
+        visual_type = scene["visual_type"]
+
+        run_generator(visual_type)
 
     print()
     print("=" * 60)
-    print("ALL VISUAL GENERATORS COMPLETED")
+    print("ALL MANIFEST VISUALS COMPLETED")
     print("=" * 60)
 
 
