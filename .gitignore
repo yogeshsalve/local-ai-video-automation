@@ -243,3 +243,7 @@ assets/images/generated/*
 # Generated videos
 output/*
 !output/.gitkeep
+
+# Generated AI scripts
+assets/scripts/generated/*
+!assets/scripts/generated/.gitkeep
