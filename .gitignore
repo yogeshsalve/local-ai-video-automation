@@ -247,3 +247,7 @@ output/*
 # Generated AI scripts
 assets/scripts/generated/*
 !assets/scripts/generated/.gitkeep
+
+# Generated scene plans
+assets/scenes/generated/*
+!assets/scenes/generated/.gitkeep
