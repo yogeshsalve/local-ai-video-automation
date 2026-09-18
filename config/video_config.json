@@ -20,6 +20,9 @@
         "subtitles": "assets/audio/generated/day4_transcription.srt",
         "background": "assets/images/generated/day5_fabric_background.png"
     },
+    "script": {
+    "output_directory": "assets/scripts/generated"
+    },
     "output": {
         "directory": "output",
         "filename": "day6_config_video_v2.mp4",

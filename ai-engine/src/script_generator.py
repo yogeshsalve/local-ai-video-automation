@@ -1,11 +1,12 @@
 import sys
 import subprocess
+import json
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 PROMPT_FILE = PROJECT_ROOT / "config" / "script_prompt.txt"
-OUTPUT_DIR = PROJECT_ROOT / "assets" / "scripts" / "generated"
+CONFIG_FILE = PROJECT_ROOT / "config" / "video_config.json"
 
 MODEL_NAME = "qwen2.5:3b"
 
@@ -46,7 +47,16 @@ def generate_script(topic):
 
 
 def save_script(script, topic):
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    if not CONFIG_FILE.exists():
+        raise FileNotFoundError(f"Configuration file not found: {CONFIG_FILE}")
+
+    with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    output_directory = config["script"]["output_directory"]
+
+    output_dir = PROJECT_ROOT / output_directory
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     safe_topic = "".join(
         character.lower() if character.isalnum() else "_"
@@ -58,7 +68,7 @@ def save_script(script, topic):
 
     safe_topic = safe_topic.strip("_")
 
-    output_file = OUTPUT_DIR / f"{safe_topic}_script.txt"
+    output_file = output_dir / f"{safe_topic}_script.txt"
 
     output_file.write_text(
         script,
@@ -70,7 +80,6 @@ def save_script(script, topic):
     print(output_file)
 
     return output_file
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: python ai-engine\\src\\script_generator.py \"Your topic\"")
