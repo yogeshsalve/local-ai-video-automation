@@ -1,3 +1,4 @@
+import sys
 import subprocess
 from pathlib import Path
 
@@ -47,7 +48,17 @@ def generate_script(topic):
 def save_script(script, topic):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    output_file = OUTPUT_DIR / "day7_onelake_script.txt"
+    safe_topic = "".join(
+        character.lower() if character.isalnum() else "_"
+        for character in topic
+    )
+
+    while "__" in safe_topic:
+        safe_topic = safe_topic.replace("__", "_")
+
+    safe_topic = safe_topic.strip("_")
+
+    output_file = OUTPUT_DIR / f"{safe_topic}_script.txt"
 
     output_file.write_text(
         script,
@@ -55,14 +66,17 @@ def save_script(script, topic):
     )
 
     print()
-    print(f"Script saved successfully:")
+    print("Script saved successfully:")
     print(output_file)
 
     return output_file
 
-
 def main():
-    topic = "Microsoft Fabric OneLake"
+    if len(sys.argv) < 2:
+        print("Usage: python ai-engine\\src\\script_generator.py \"Your topic\"")
+        return
+
+    topic = " ".join(sys.argv[1:])
 
     script = generate_script(topic)
 
